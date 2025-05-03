@@ -278,6 +278,7 @@ Flickable {
             DelDivider {
                 width: parent.width
                 height: 30
+                title: qsTr("随机数样本文件检测")
                 titleAlign: DelDivider.Align_Center
             }
 
@@ -380,6 +381,52 @@ Flickable {
                     presetColor: "green"
                 }
             }
+
+            DelDivider {
+                width: parent.width
+                height: 30
+                title: qsTr("软件随机数生成器测试数据生成")
+                titleAlign: DelDivider.Align_Center
+            }
+
+            Row {
+                spacing: 5
+                DelTag {
+                    text: "随机数测试数据生成路径："
+                    height: 30
+                    width: progressBar.width * 0.3
+                }
+
+                DelInput {
+                    id: testDataDirUrl
+                    text: ""
+                    width: progressBar.width * 0.9 - 30
+                    height: 30
+                }
+            }
+
+            Row {
+                spacing: 5
+                DelButton {
+                    text: qsTr("选择测试数据文件保存路径")
+                    height: 30
+                    width: progressBar.width * 0.5
+                    type: DelButton.Type_Filled
+                    onClicked: {
+                        randFileGenFileDialog.open()
+                    }
+                }
+
+                DelButton {
+                    text: qsTr("开始生成测试数据")
+                    height: 30
+                    width: progressBar.width * 0.5
+                    type: DelButton.Type_Filled
+                    onClicked: {
+                        // TODO call drng generate function
+                    }
+                }
+            }
         }
     }
 
@@ -390,20 +437,36 @@ Flickable {
         fileMode: Platform.FileDialog.ExistingFiles
         onAccepted: {
             let sampleFileUrlText = fileDialog.currentFile; // 转成本地路径
-            const path = new URL(sampleFileUrlText).pathname.substr(Qt.platform.os == "windows" ? 1 : 0);
-            randomTest.sampleUrl = sampleFileUrlText;
 
-            sampleFileUrl.text = path;
-            // 获取同目录下的 report.csv 文件路径
-            let reportFilePath = path.substring(0, path.lastIndexOf('/')) + "/report.csv";
+            const localPath = new URL(sampleFileUrlText).pathname.substr(Qt.platform.os == "windows" ? 1 : 0);
+            randomTest.sampleUrl = sampleFileUrlText;
+            sampleFileUrl.text = localPath;
+
+            // 获取上一目录下的 report.csv 文件路径
+            let reportdir = localPath.substring(0, localPath.lastIndexOf('/'));
+            reportdir = reportdir.substring(0, reportdir.lastIndexOf('/'));
+            let reportFilePath = reportdir + "/report.csv";
             reportFileUrl.text = reportFilePath;
-            let sampleInfo = randomTest.checkSampleInfo(path);
+
+            // 获取样本文件相关信息
+            let sampleInfo = randomTest.checkSampleInfo(localPath);
             if(sampleInfo.length != 0) {
                 sampleCount.text = sampleInfo[0].sampleCount;
                 sampleSize.text = sampleInfo[0].sampleSize;
                 needPassSampleCount.text = sampleInfo[0].needPassSampleCount;
             }
 
+        }
+    }
+
+    Platform.FolderDialog {
+        id: randFileGenFileDialog
+        title: "选择随机数样本文件生成路径"
+        folder: Platform.StandardPaths.writableLocation(Platform.StandardPaths.DocumentsLocation)
+        onAccepted: {
+            let testDataDirUrlText = randFileGenFileDialog.folder; // 转成本地路径
+            const localDir = new URL(testDataDirUrlText).pathname.substr(Qt.platform.os == "windows" ? 1 : 0);
+            testDataDirUrl.text = localDir;
         }
     }
 
@@ -482,6 +545,7 @@ Flickable {
         function onRandomTestSuccess(testRetInfo) {
             main.setTestTime()
             popupText.text = testRetInfo;
+            // TODO 可以自定义更好看的成功提示框
             testRetPopup.open();
         }
     }

@@ -54,9 +54,17 @@ RandomTest::RandomTest(QObject* parent) : QObject(parent)
 
     connect(this, &RandomTest::fileDataReady, this, &RandomTest::onFileDataReady);
     m_timer = new QTimer(this);
+
+    // get current pc thread count
+    int threadCount = QThread::idealThreadCount();
+    qDebug() << "Current thread count:" << threadCount;
+    m_threadPoolPtr = std::make_unique<ThreadPool>(threadCount - 1);  // Initialize thread pool with the number of threads
 }
 
-RandomTest::~RandomTest() { m_randomTestData.clear(); }
+RandomTest::~RandomTest() 
+{ 
+    m_randomTestData.clear(); 
+}
 
 QVariantList RandomTest::getRandomTestDataAsVariantList() const
 {
@@ -121,6 +129,7 @@ void RandomTest::testSample(QList<int> algorithms, const QByteArray& fileDataBuf
 {
     uint64_t nbit = fileDataBuffer.size() << 3;  // fileDataBuffer.size() * 8
     unsigned char* buf = (unsigned char*)fileDataBuffer.data();
+    double alpha = getAlpha();
     // Implement the random test logic here
     int fail;
     for (int algorithm : algorithms) {
@@ -146,25 +155,41 @@ void RandomTest::testSample(QList<int> algorithms, const QByteArray& fileDataBuf
                 m_randomTestData[3]->m_nonSignificantLevelSampleCount += fail;
                 break;
             case 4:
-                fail = rand_self_test_serial(buf, nbit, 3, nullptr, nullptr, nullptr, nullptr) ^ 1;
+            {
+                double actualP1 = 0.0;
+                rand_self_test_serial(buf, nbit, 3, &actualP1, nullptr, nullptr, nullptr);
+                fail = (actualP1 < alpha) ? 1 : 0;
                 m_randomTestData[4]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[4]->m_nonSignificantLevelSampleCount += fail;
                 break;
+            }
             case 5:
-                fail = rand_self_test_serial(buf, nbit, 3, nullptr, nullptr, nullptr, nullptr) ^ 1;
+            {
+                double actualP2 = 0.0;
+                rand_self_test_serial(buf, nbit, 3, nullptr, &actualP2, nullptr, nullptr);
+                fail = (actualP2 < alpha) ? 1 : 0;
                 m_randomTestData[5]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[5]->m_nonSignificantLevelSampleCount += fail;
                 break;
+            }
             case 6:
-                fail = rand_self_test_serial(buf, nbit, 5, nullptr, nullptr, nullptr, nullptr) ^ 1;
+            {
+                double actualP1 = 0.0;
+                rand_self_test_serial(buf, nbit, 5, &actualP1, nullptr, nullptr, nullptr);
+                fail = (actualP1 < alpha) ? 1 : 0;
                 m_randomTestData[6]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[6]->m_nonSignificantLevelSampleCount += fail;
                 break;
+            }
             case 7:
-                fail = rand_self_test_serial(buf, nbit, 5, nullptr, nullptr, nullptr, nullptr) ^ 1;
+            {
+                double actualP2 = 0.0;
+                rand_self_test_serial(buf, nbit, 5, nullptr, &actualP2, nullptr, nullptr);
+                fail = (actualP2 < alpha) ? 1 : 0;
                 m_randomTestData[7]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[7]->m_nonSignificantLevelSampleCount += fail;
                 break;
+            }
             case 8:
                 fail = rand_self_test_runs(buf, nbit, nullptr, nullptr) ^ 1;
                 m_randomTestData[8]->m_significantLevelSampleCount += !fail;
@@ -290,7 +315,7 @@ void RandomTest::runRandomTest(QList<int> algorithms)
     QString filePrefix = baseName.left(match.capturedStart(0));
 
     // Submit the file reading task to the thread pool
-    m_threadPool.submit([this, numSuffix, filePrefix, dirPath, fileIndex, algorithms, suffix]() mutable {
+    m_threadPoolPtr->submit([this, numSuffix, filePrefix, dirPath, fileIndex, algorithms, suffix]() mutable {
         while (fileIndex <= 999) {
             QString fileNumSuf;
             if (numSuffix.size() == 1) {
@@ -368,7 +393,7 @@ void RandomTest::onFileDataReady(QList<int> algorithms)
 {
 #ifdef USE_CONDITION_VARIABLE
     // Submit the testSample task to the thread pool
-    m_threadPool.submit([this]() {
+    m_threadPoolPtr->submit([this]() {
         QByteArray fileDataBuffer;
         if (!m_fileDataQueue.dequeue(fileDataBuffer)) {
             m_not_full.notify_one();
@@ -380,10 +405,12 @@ void RandomTest::onFileDataReady(QList<int> algorithms)
         // Notify producer thread that there is space in the queue
         --m_queue_size;
         m_not_full.notify_one();
+        m_processData++;
+        qDebug() << "m_processData:" << m_processData;
     });
 #elif defined(USE_QT_SEMAPHORE)
     // Submit the testSample task to the thread pool
-    m_threadPool.submit([this, algorithms]() {
+    m_threadPoolPtr->submit([this, algorithms]() {
         m_usedSpace.acquire();  // 等待已使用空间
         QByteArray fileDataBuffer;
         if (!m_fileDataQueue.dequeue(fileDataBuffer)) {

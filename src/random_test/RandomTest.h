@@ -10,6 +10,7 @@
 #include <QList>
 #include <QTimer>
 #include <atomic>
+#include <memory>
 
 enum class RandomTestAlgorithm {
     FrequencyTest = 0,
@@ -63,7 +64,6 @@ class RandomTestData
 };
 
 constexpr int max_queue_size = 50;  // 最大队列大小
-constexpr int thread_pool_size = 10;  // 线程池大小
 
 // #define USE_CONDITION_VARIABLE 
 #define USE_QT_SEMAPHORE 
@@ -107,7 +107,7 @@ class RandomTest : public QObject
    private:
     QVector<RandomTestData*> m_randomTestData;
     QVariantList m_randomTestListData;
-    ThreadPool m_threadPool{thread_pool_size};
+    std::unique_ptr<ThreadPool> m_threadPoolPtr;  // 线程池智能指针
     SafeQueue<QByteArray> m_fileDataQueue;
 #ifdef USE_CONDITION_VARIABLE
     std::mutex m_mutex;
