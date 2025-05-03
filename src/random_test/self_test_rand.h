@@ -16,6 +16,7 @@ constexpr std::size_t array_size(const T (&)[N]) noexcept {
 }
 void setAlpha(double alphaValue);
 double getAlpha();
+double getAlphaT();
 double cephes_igamc(double a, double x);
 int rand_self_test_frequency(const unsigned char *buf, size_t nbit, double *P_value, double *Q_value);
 int rand_self_test_block_frequency(const unsigned char *buf,

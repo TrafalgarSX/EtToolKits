@@ -319,6 +319,7 @@ Flickable {
                 DelInput {
                     id: reportFileUrl
                     text: ""
+                    placeholderText: "TODO impliment"
                     width: progressBar.width * 0.5
                     height: 30
                 }

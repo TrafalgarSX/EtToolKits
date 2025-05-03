@@ -37,7 +37,7 @@ static double big = 4.503599627370496e15;
 static double biginv = 2.22044604925031308085e-16;
 
 static double cephes_igam(double a, double x);
-static double cephes_igamc(double a, double x);
+double cephes_igamc(double a, double x);
 static double cephes_lgam(double x);
 static double cephes_polevl(double x, double *coef, int N);
 static double cephes_p1evl(double x, double *coef, int N);
@@ -70,6 +70,11 @@ void setAlpha(double alphaValue)
 double getAlpha()
 {
     return alpha;
+}
+
+double getAlphaT()
+{
+    return alphaT;
 }
 
 static double cephes_normal(double x)

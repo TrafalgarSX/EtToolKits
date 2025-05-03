@@ -6,7 +6,6 @@
 
 #include "self_test_rand.h"
 
-
 RandomTest::RandomTest(QObject* parent) : QObject(parent)
 {
     m_randomTestData.push_back(new RandomTestData{"单比特频数检测", 0, 0, RandomTestAlgorithm::FrequencyTest});
@@ -58,13 +57,11 @@ RandomTest::RandomTest(QObject* parent) : QObject(parent)
     // get current pc thread count
     int threadCount = QThread::idealThreadCount();
     qDebug() << "Current thread count:" << threadCount;
-    m_threadPoolPtr = std::make_unique<ThreadPool>(threadCount - 1);  // Initialize thread pool with the number of threads
+    m_threadPoolPtr =
+        std::make_unique<ThreadPool>(threadCount - 1);  // Initialize thread pool with the number of threads
 }
 
-RandomTest::~RandomTest() 
-{ 
-    m_randomTestData.clear(); 
-}
+RandomTest::~RandomTest() { m_randomTestData.clear(); }
 
 QVariantList RandomTest::getRandomTestDataAsVariantList() const
 {
@@ -132,158 +129,182 @@ void RandomTest::testSample(QList<int> algorithms, const QByteArray& fileDataBuf
     double alpha = getAlpha();
     // Implement the random test logic here
     int fail;
+    double Q, Q1, Q2;
     for (int algorithm : algorithms) {
         switch (algorithm) {
             case 0:
-                fail = rand_self_test_frequency(buf, nbit, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_frequency(buf, nbit, nullptr, &Q) ^ 1;
                 m_randomTestData[0]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[0]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[0][checkQRange(Q)]++;
                 break;
             case 1:
-                fail = rand_self_test_block_frequency(buf, nbit, 10000, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_block_frequency(buf, nbit, 10000, nullptr, &Q) ^ 1;
                 m_randomTestData[1]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[1]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[1][checkQRange(Q)]++;
                 break;
             case 2:
-                fail = rand_self_test_poker(buf, nbit, 4, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_poker(buf, nbit, 4, nullptr, &Q) ^ 1;
                 m_randomTestData[2]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[2]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[2][checkQRange(Q)]++;
                 break;
             case 3:
-                fail = rand_self_test_poker(buf, nbit, 8, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_poker(buf, nbit, 8, nullptr, &Q) ^ 1;
                 m_randomTestData[3]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[3]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[3][checkQRange(Q)]++;
                 break;
-            case 4:
-            {
+            case 4: {
                 double actualP1 = 0.0;
-                rand_self_test_serial(buf, nbit, 3, &actualP1, nullptr, nullptr, nullptr);
+                rand_self_test_serial(buf, nbit, 3, &actualP1, nullptr, &Q1, &Q2);
                 fail = (actualP1 < alpha) ? 1 : 0;
                 m_randomTestData[4]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[4]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[4][checkQRange(Q1)]++;
                 break;
             }
-            case 5:
-            {
+            case 5: {
                 double actualP2 = 0.0;
-                rand_self_test_serial(buf, nbit, 3, nullptr, &actualP2, nullptr, nullptr);
+                rand_self_test_serial(buf, nbit, 3, nullptr, &actualP2, &Q1, &Q2);
                 fail = (actualP2 < alpha) ? 1 : 0;
                 m_randomTestData[5]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[5]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[5][checkQRange(Q2)]++;
                 break;
             }
-            case 6:
-            {
+            case 6: {
                 double actualP1 = 0.0;
-                rand_self_test_serial(buf, nbit, 5, &actualP1, nullptr, nullptr, nullptr);
+                rand_self_test_serial(buf, nbit, 5, &actualP1, nullptr, &Q1, &Q2);
                 fail = (actualP1 < alpha) ? 1 : 0;
                 m_randomTestData[6]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[6]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[6][checkQRange(Q1)]++;
                 break;
             }
-            case 7:
-            {
+            case 7: {
                 double actualP2 = 0.0;
-                rand_self_test_serial(buf, nbit, 5, nullptr, &actualP2, nullptr, nullptr);
+                rand_self_test_serial(buf, nbit, 5, nullptr, &actualP2, &Q1, &Q2);
                 fail = (actualP2 < alpha) ? 1 : 0;
                 m_randomTestData[7]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[7]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[7][checkQRange(Q2)]++;
                 break;
             }
             case 8:
-                fail = rand_self_test_runs(buf, nbit, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_runs(buf, nbit, nullptr, &Q) ^ 1;
                 m_randomTestData[8]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[8]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[8][checkQRange(Q)]++;
                 break;
             case 9:
-                fail = rand_self_test_runs_distribution(buf, nbit, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_runs_distribution(buf, nbit, nullptr, &Q) ^ 1;
                 m_randomTestData[9]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[9]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[9][checkQRange(Q)]++;
                 break;
             case 10:
-                fail = rand_self_test_longest_run_of_ones(buf, nbit, true, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_longest_run_of_ones(buf, nbit, true, nullptr, &Q) ^ 1;
                 m_randomTestData[10]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[10]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[10][checkQRange(Q)]++;
                 break;
             case 11:
-                fail = rand_self_test_longest_run_of_ones(buf, nbit, false, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_longest_run_of_ones(buf, nbit, false, nullptr, &Q) ^ 1;
                 m_randomTestData[11]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[11]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[11][checkQRange(Q)]++;
                 break;
             case 12:
-                fail = rand_self_test_binary_derivation(buf, nbit, 3, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_binary_derivation(buf, nbit, 3, nullptr, &Q) ^ 1;
                 m_randomTestData[12]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[12]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[12][checkQRange(Q)]++;
                 break;
             case 13:
-                fail = rand_self_test_binary_derivation(buf, nbit, 7, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_binary_derivation(buf, nbit, 7, nullptr, &Q) ^ 1;
                 m_randomTestData[13]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[13]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[13][checkQRange(Q)]++;
                 break;
             case 14:
-                fail = rand_self_test_self_correlation(buf, nbit, 1, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_self_correlation(buf, nbit, 1, nullptr, &Q) ^ 1;
                 m_randomTestData[14]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[14]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[14][checkQRange(Q)]++;
                 break;
             case 15:
-                fail = rand_self_test_self_correlation(buf, nbit, 2, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_self_correlation(buf, nbit, 2, nullptr, &Q) ^ 1;
                 m_randomTestData[15]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[15]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[15][checkQRange(Q)]++;
                 break;
             case 16:
-                fail = rand_self_test_self_correlation(buf, nbit, 8, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_self_correlation(buf, nbit, 8, nullptr, &Q) ^ 1;
                 m_randomTestData[16]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[16]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[16][checkQRange(Q)]++;
                 break;
             case 17:
-                fail = rand_self_test_self_correlation(buf, nbit, 16, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_self_correlation(buf, nbit, 16, nullptr, &Q) ^ 1;
                 m_randomTestData[17]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[17]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[17][checkQRange(Q)]++;
                 break;
             case 18:
-                fail = rand_self_test_binary_matrix_rank(buf, nbit, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_binary_matrix_rank(buf, nbit, nullptr, &Q) ^ 1;
                 m_randomTestData[18]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[18]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[18][checkQRange(Q)]++;
                 break;
             case 19:
-                fail = rand_self_test_cumulative_sums(buf, nbit, nullptr, nullptr, true) ^ 1;
+                fail = rand_self_test_cumulative_sums(buf, nbit, nullptr, &Q, true) ^ 1;
                 m_randomTestData[19]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[19]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[19][checkQRange(Q)]++;
                 break;
             case 20:
-                fail = rand_self_test_cumulative_sums(buf, nbit, nullptr, nullptr, false) ^ 1;
+                fail = rand_self_test_cumulative_sums(buf, nbit, nullptr, &Q, false) ^ 1;
                 m_randomTestData[20]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[20]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[20][checkQRange(Q)]++;
                 break;
             case 21:
-                fail = rand_self_test_approximate_entropy(buf, nbit, 2, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_approximate_entropy(buf, nbit, 2, nullptr, &Q) ^ 1;
                 m_randomTestData[21]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[21]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[21][checkQRange(Q)]++;
                 break;
             case 22:
-                fail = rand_self_test_approximate_entropy(buf, nbit, 5, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_approximate_entropy(buf, nbit, 5, nullptr, &Q) ^ 1;
                 m_randomTestData[22]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[22]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[22][checkQRange(Q)]++;
                 break;
             case 23:
-                fail = rand_self_test_linear_complexity(buf, nbit, 500, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_linear_complexity(buf, nbit, 500, nullptr, &Q) ^ 1;
                 m_randomTestData[23]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[23]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[23][checkQRange(Q)]++;
                 break;
             case 24:
-                fail = rand_self_test_linear_complexity(buf, nbit, 1000, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_linear_complexity(buf, nbit, 1000, nullptr, &Q) ^ 1;
                 m_randomTestData[24]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[24]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[24][checkQRange(Q)]++;
                 break;
             case 25:
-                fail = rand_self_test_maurer_universal_statistical(buf, nbit, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_maurer_universal_statistical(buf, nbit, nullptr, &Q) ^ 1;
                 m_randomTestData[25]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[25]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[25][checkQRange(Q)]++;
                 break;
             case 26:
-                fail = rand_self_test_discrete_fourier_transform(buf, nbit, nullptr, nullptr) ^ 1;
+                fail = rand_self_test_discrete_fourier_transform(buf, nbit, nullptr, &Q) ^ 1;
                 m_randomTestData[26]->m_significantLevelSampleCount += !fail;
                 m_randomTestData[26]->m_nonSignificantLevelSampleCount += fail;
+                m_FArray[26][checkQRange(Q)]++;
                 break;
             default:
                 qDebug() << "Unknown algorithm key:" << algorithm;
@@ -329,7 +350,7 @@ void RandomTest::runRandomTest(QList<int> algorithms)
             QString currentFilePath = dirPath + "/" + currentFileName;
 
             QByteArray fileData;
-            if(!algorithms.isEmpty()) {
+            if (!algorithms.isEmpty()) {
                 qDebug() << "algorithms is empty!";
                 QFile file(currentFilePath);
                 if (!file.exists()) {
@@ -375,7 +396,7 @@ void RandomTest::runRandomTest(QList<int> algorithms)
             QString testRetInfo;
             bool testRet = checkRandomTestResult(testRetInfo);
             qDebug() << testRetInfo;
-            if(testRet) {
+            if (testRet) {
                 emit randomTestSuccess(testRetInfo);
             } else {
                 emit randomTestFailed(testRetInfo);
@@ -523,7 +544,7 @@ bool RandomTest::checkRandomTestResult(QString& testRetInfo)
         static_cast<int>(std::round(m_sampleCount * (1 - alpha - 3 * (sqrt(alpha * (1 - alpha) / m_sampleCount)))));
     QString failTestName;
     int failTestCount = 0;
-    for(int i = 0; i < m_randomTestData.size(); ++i) {
+    for (int i = 0; i < m_randomTestData.size(); ++i) {
         if (m_randomTestData[i]->m_significantLevelSampleCount.load() < needPassSampleCount) {
             testRet = false;
             failTestName += m_randomTestData[i]->m_randTestAlgorithm + "\n";
@@ -531,12 +552,47 @@ bool RandomTest::checkRandomTestResult(QString& testRetInfo)
         }
     }
 
-    // TODO 样本分布均匀性判定
+    // 样本分布均匀性判定
+    QString testDistributionRetInfo;
+    bool testDistributionRet = false;
+    testDistributionRet = checkPTValueResult(testDistributionRetInfo);
 
-    if(testRet) {
+    if (testRet && testDistributionRet) {
         testRetInfo = "随机性测试通过！";
     } else {
-        testRetInfo = "随机性测试失败！\n测试不通过的个数：" + QString::number(failTestCount) + "\n" + failTestName;
+        if(testDistributionRet) {
+            testRetInfo = "随机性测试失败！\n测试不通过的个数：" + QString::number(failTestCount) + "\n" + failTestName;
+        }else {
+            testRetInfo = "随机性测试失败！\n测试不通过的个数：" + QString::number(failTestCount) + "\n" + failTestName +
+                          testDistributionRetInfo;
+        }
     }
+    return testRet && testDistributionRet;
+}
+
+bool RandomTest::checkPTValueResult(QString& testDistributionRetInfo)
+{
+    bool testRet = true;
+    double alphaT = getAlphaT();
+    for(int i = 0; i < algorithmCount; ++i) {
+        double V = 0.0;
+        for(int j = 0; j < 10; ++j) {
+            int Fj = m_FArray[i][j];
+            int tmp = m_sampleCount / 10;
+            V += (double)((Fj - tmp) * (Fj - tmp)) / (tmp);
+        }
+        m_randomTestData[i]->m_uniformityPTValue = cephes_igamc(9 / 2.0, V /2.0);
+        if (m_randomTestData[i]->m_uniformityPTValue < alphaT) {
+            testDistributionRetInfo += m_randomTestData[i]->m_randTestAlgorithm + "样本分布均匀性数据不达标！\n";
+            testRet = false;
+        }
+    }
+
     return testRet;
+}
+
+int checkQRange(double Q) 
+{
+    assert(Q >= 0.0 && Q <= 1.0); // 如果 Q 超出范围，程序会在调试模式下终止
+    return static_cast<int>(Q * 10); // 每 0.1 为一个区间，直接乘以 10 并取整即可
 }
