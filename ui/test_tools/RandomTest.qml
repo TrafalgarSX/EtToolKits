@@ -183,36 +183,20 @@ Flickable {
             spacing: 10
             width: parent.width * 0.4
 
-            ProgressBar {
+            DelProgress {
                 id: progressBar
-                width: parent.width
-                value: randomTest.progress
-                from: 0.0
-                to: 1.0
-                height: 40
-
-                background: Rectangle {
-                    color: "#e0e0e0"
-                    width: progressBar.width
-                    height: progressBar.height
-                }
-
-                contentItem: Rectangle {
-                    color: "#21be2b"
-                    width: progressBar.width * progressBar.value
-                    height: progressBar.height
-                    Behavior on width {
-                        NumberAnimation { duration: 200 }
+                width: parent.width - 30
+                height: 30
+                percent: randomTest.progress * 100
+                status: {
+                    if (randomTest.progress == 1) {
+                        return DelProgress.Status_Success
+                    } else if (randomTest.progress == 0) {
+                        return DelProgress.Status_Error
+                    } else {
+                        return DelProgress.Status_Active
                     }
                 }
-            }
-
-            DelTag {
-                text: qsTr("检测进度：") + Math.round(progressBar.value * 100) + "%"
-                width: progressBar.width / 3
-                height: progressBar.height
-                anchors.horizontalCenter: progressBar.horizontalCenter
-                presetColor: "cyan"
             }
 
             DelTag {
@@ -331,9 +315,16 @@ Flickable {
                     type: DelButton.Type_Filled
                     onClicked: {
                         console.log("checkedKeys: " + tableView.checkedKeys)
-                        randomTest.runRandomTest(tableView.checkedKeys)
-                        main.startTimeDate = new Date(); // 获取当前时间
-                        startTime.text = main.startTimeDate.toLocaleString(); // 格式化为本地时间字符串
+                        if(sampleFileUrl.text == "") {
+                            message.warning("请先选择样本文件！")
+                        } else if(tableView.checkedKeys.length == 0) {
+                            message.warning("请至少选择一个检测项！")
+                        }else {
+                            randomTest.runRandomTest(tableView.checkedKeys)
+                            main.startTimeDate = new Date(); // 获取当前时间
+                            startTime.text = main.startTimeDate.toLocaleString(); // 格式化为本地时间字符串
+                        }
+
                     }
                 }
             }
@@ -472,7 +463,7 @@ Flickable {
     }
 
     DelMessage {
-        id: successMessage
+        id: message 
         z: 999
         parent: root.captionBar
         width: parent.width
@@ -554,6 +545,7 @@ Flickable {
     Connections{
         target: randomTest
         function onRandomTestFailed(testRetInfo) {
+            progressBar.status = DelProgress.Status_Exception
             main.setTestTime()
             popupText.text = testRetInfo;
             testRetPopup.open();
