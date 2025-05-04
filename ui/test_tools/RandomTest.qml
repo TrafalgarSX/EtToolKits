@@ -202,7 +202,7 @@ Flickable {
             DelTag {
                 text: "随机数样本文件大小建议为 1000*1000 bit(规范推荐，共测试 1000 个样本)"
                 presetColor: "volcano"
-                width: parent.width
+                width: parent.width - 20
                 height: 30
                 anchors.left: progressBar.left
             }
@@ -247,14 +247,14 @@ Flickable {
                 DelTag {
                     text: "成功通过检测项，需要>=显著水平的样本数量："
                     height: 30
-                    width: progressBar.width * 0.6 - 20
+                    width: progressBar.width * 0.7 - 20
                 }
 
                 DelText {
                     id: needPassSampleCount
                     text: ""
                     verticalAlignment: Text.AlignVCenter
-                    width: progressBar.width * 0.4 - 20
+                    width: progressBar.width * 0.3 - 20
                     height: 30
                 }
             }
@@ -386,13 +386,13 @@ Flickable {
                 DelTag {
                     text: "随机数测试数据生成路径："
                     height: 30
-                    width: progressBar.width * 0.3
+                    width: progressBar.width * 0.4 - 20
                 }
 
                 DelInput {
                     id: testDataDirUrl
                     text: ""
-                    width: progressBar.width * 0.9 - 30
+                    width: progressBar.width * 0.6
                     height: 30
                 }
             }
