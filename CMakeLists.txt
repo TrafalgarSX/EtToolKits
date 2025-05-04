@@ -10,6 +10,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2)
 find_package(Qt6 COMPONENTS ShaderTools)
 find_package(folly CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(gtest CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -91,3 +93,7 @@ if (WIN32)
     file(GLOB DLLS "${CMAKE_CURRENT_SOURCE_DIR}/libs/*.dll")
     install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
+
+add_executable(randomKats ${PROJECT_SOURCE_DIR}/test/randomKats.cpp ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp)
+target_include_directories(randomKats PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(randomKats PRIVATE GTest::gtest GTest::gtest_main)
