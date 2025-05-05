@@ -61,7 +61,13 @@ RandomTest::RandomTest(QObject* parent) : QObject(parent)
         std::make_unique<ThreadPool>(threadCount - 1);  // Initialize thread pool with the number of threads
 }
 
-RandomTest::~RandomTest() { m_randomTestData.clear(); }
+RandomTest::~RandomTest() { 
+    for(auto& data : m_randomTestData) {
+        delete data;
+    }
+    m_randomTestData.clear();
+    m_timer->deleteLater();
+}
 
 QVariantList RandomTest::getRandomTestDataAsVariantList() const
 {
