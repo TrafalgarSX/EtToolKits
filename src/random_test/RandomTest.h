@@ -82,7 +82,6 @@ class RandomTest : public QObject
     Q_DISABLE_COPY(RandomTest)
 
     Q_INVOKABLE void runRandomTest(QList<int> algorithms);
-    Q_INVOKABLE void clearRandomTestData();
 
     Q_INVOKABLE QVariantList randomTestListData() const;
     Q_INVOKABLE void significantLevel(double significantLevel);
@@ -106,8 +105,9 @@ class RandomTest : public QObject
     QVariantList getRandomTestDataAsVariantList() const;
     bool readFileData(QString filePath);
     void testSample(QList<int> algorithms, const QByteArray& fileDataBuffer);
-    bool checkRandomTestResult(QString& failTestInfo);
-    bool checkPTValueResult(QString& testRetInfo);
+    bool checkRandomTestResult(const QList<int>& algorithms, QString& failTestInfo);
+    bool checkPTValueResult(const QList<int>& algorithms, QString& testRetInfo);
+    void clearRandomTestData();
    private:
     QVector<RandomTestData*> m_randomTestData;
     QVariantList m_randomTestListData;
@@ -126,7 +126,6 @@ class RandomTest : public QObject
     QString m_sampleUrl = ""; // 样本文件路径
     int m_sampleCount = 0;
     std::atomic_int m_processData{0}; // 处理数据的数量
-    
     // k = 10
     std::array<std::array<std::atomic_int, 10>, algorithmCount> m_FArray{}; // 重要性水平样本数量
 };

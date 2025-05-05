@@ -189,13 +189,14 @@ Flickable {
                 height: 30
                 percent: randomTest.progress * 100
                 status: {
-                    if (randomTest.progress == 1) {
+                    if (randomTest.progress >= 1) {
                         return DelProgress.Status_Success
-                    } else if (randomTest.progress == 0) {
+                    } else if (randomTest.progress <= 0) {
                         return DelProgress.Status_Error
                     } else {
                         return DelProgress.Status_Active
                     }
+                    console.log("progress: " + randomTest.progress)
                 }
             }
 
@@ -315,6 +316,7 @@ Flickable {
                     type: DelButton.Type_Filled
                     onClicked: {
                         console.log("checkedKeys: " + tableView.checkedKeys)
+                        progressBar.status = DelProgress.Status_Normal
                         if(sampleFileUrl.text == "") {
                             message.warning("请先选择样本文件！")
                         } else if(tableView.checkedKeys.length == 0) {
@@ -535,6 +537,7 @@ Flickable {
     Connections{
         target: randomTest
         function onRandomTestSuccess(testRetInfo) {
+            progressBar.status = DelProgress.Status_Success
             main.setTestTime()
             popupText.text = testRetInfo;
             // TODO 可以自定义更好看的成功提示框

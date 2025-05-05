@@ -84,8 +84,24 @@ QVariantList RandomTest::getRandomTestDataAsVariantList() const
 
 void RandomTest::clearRandomTestData()
 {
-    m_randomTestData.clear();
-    emit randomTestListDataChanged(m_randomTestListData);
+    for(auto & data : m_randomTestData) {
+        data->m_significantLevelSampleCount = 0;
+        data->m_nonSignificantLevelSampleCount = 0;
+        data->m_uniformityPTValue = 0.0;
+    }
+    qDebug() << "m_fileDataQueue size:" << m_fileDataQueue.size();
+    while (!m_fileDataQueue.empty()) {
+        QByteArray fileDataBuffer;
+        m_fileDataQueue.dequeue(fileDataBuffer);
+    }
+    m_progress = 0.0;
+    m_processData = 0;
+    m_randomTestListData.clear();
+    for(int i = 0; i < algorithmCount; ++i) {
+        for(int j = 0; j < m_FArray[0].size(); ++j) {
+            m_FArray[i][j] = 0;
+        }
+    }
 }
 
 QVariantList RandomTest::randomTestListData() const { return m_randomTestListData; }
@@ -315,6 +331,7 @@ void RandomTest::testSample(QList<int> algorithms, const QByteArray& fileDataBuf
 
 void RandomTest::runRandomTest(QList<int> algorithms)
 {
+    clearRandomTestData();
     QUrl url(m_sampleUrl);
     QString filePath = url.toLocalFile();
     QFileInfo fileInfo(filePath);
@@ -387,14 +404,14 @@ void RandomTest::runRandomTest(QList<int> algorithms)
         }
     });
 
-    connect(m_timer, &QTimer::timeout, this, [this]() {
+    connect(m_timer, &QTimer::timeout, this, [this, algorithms]() {
         double progress = (double)m_processData / m_sampleCount;
 
         if (m_processData >= m_sampleCount) {
             setProgress(progress);
             m_timer->stop();
             QString testRetInfo;
-            bool testRet = checkRandomTestResult(testRetInfo);
+            bool testRet = checkRandomTestResult(algorithms, testRetInfo);
             qDebug() << testRetInfo;
             if (testRet) {
                 emit randomTestSuccess(testRetInfo);
@@ -536,7 +553,7 @@ QList<QVariant> RandomTest::checkSampleInfo(QString localFilePath)
     return list;
 }
 
-bool RandomTest::checkRandomTestResult(QString& testRetInfo)
+bool RandomTest::checkRandomTestResult(const QList<int>& algorithms, QString& testRetInfo)
 {
     bool testRet = true;
     double alpha = getAlpha();
@@ -544,10 +561,11 @@ bool RandomTest::checkRandomTestResult(QString& testRetInfo)
         static_cast<int>(std::round(m_sampleCount * (1 - alpha - 3 * (sqrt(alpha * (1 - alpha) / m_sampleCount)))));
     QString failTestName;
     int failTestCount = 0;
-    for (int i = 0; i < m_randomTestData.size(); ++i) {
-        if (m_randomTestData[i]->m_significantLevelSampleCount.load() < needPassSampleCount) {
+
+    for(const auto& algorithm : algorithms) {
+        if (m_randomTestData[algorithm]->m_significantLevelSampleCount.load() < needPassSampleCount) {
             testRet = false;
-            failTestName += m_randomTestData[i]->m_randTestAlgorithm + "\n";
+            failTestName += m_randomTestData[algorithm]->m_randTestAlgorithm + "\n";
             failTestCount++;
         }
     }
@@ -555,7 +573,7 @@ bool RandomTest::checkRandomTestResult(QString& testRetInfo)
     // 样本分布均匀性判定
     QString testDistributionRetInfo;
     bool testDistributionRet = false;
-    testDistributionRet = checkPTValueResult(testDistributionRetInfo);
+    testDistributionRet = checkPTValueResult(algorithms, testDistributionRetInfo);
 
     if (testRet && testDistributionRet) {
         testRetInfo = "随机性测试通过！";
@@ -570,20 +588,20 @@ bool RandomTest::checkRandomTestResult(QString& testRetInfo)
     return testRet && testDistributionRet;
 }
 
-bool RandomTest::checkPTValueResult(QString& testDistributionRetInfo)
+bool RandomTest::checkPTValueResult(const QList<int>& algorithms, QString& testDistributionRetInfo)
 {
     bool testRet = true;
     double alphaT = getAlphaT();
-    for(int i = 0; i < algorithmCount; ++i) {
+    for(const auto& algorithm : algorithms) {
         double V = 0.0;
         for(int j = 0; j < 10; ++j) {
-            int Fj = m_FArray[i][j];
+            int Fj = m_FArray[algorithm][j];
             int tmp = m_sampleCount / 10;
             V += (double)((Fj - tmp) * (Fj - tmp)) / (tmp);
         }
-        m_randomTestData[i]->m_uniformityPTValue = cephes_igamc(9 / 2.0, V /2.0);
-        if (m_randomTestData[i]->m_uniformityPTValue < alphaT) {
-            testDistributionRetInfo += m_randomTestData[i]->m_randTestAlgorithm + "样本分布均匀性数据不达标！\n";
+        m_randomTestData[algorithm]->m_uniformityPTValue = cephes_igamc(9 / 2.0, V /2.0);
+        if (m_randomTestData[algorithm]->m_uniformityPTValue < alphaT) {
+            testDistributionRetInfo += m_randomTestData[algorithm]->m_randTestAlgorithm + "样本分布均匀性数据不达标！\n";
             testRet = false;
         }
     }
