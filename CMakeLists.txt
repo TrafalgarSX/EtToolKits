@@ -88,12 +88,77 @@ qt_add_shaders(${PROJECT_NAME} "shaders"
         ui/shaders/starfield.frag
 )
 
-# Install all DLLs in the same directory as gen_cert.exe
+# test code
+add_executable(randomKats ${PROJECT_SOURCE_DIR}/test/randomKats.cpp ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp)
+target_include_directories(randomKats PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(randomKats PRIVATE GTest::gtest GTest::gtest_main)
+
+# NSIS packaging
+install(TARGETS ${PROJECT_NAME}
+    BUNDLE DESTINATION .
+	LIBRARY DESTINATION "${CMAKE_INSTALL_BINDIR}" # dynamic library
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" # static library
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+)
+message(STATUS "CMAKE_INSTALL_BINDIR: ${CMAKE_INSTALL_BINDIR}")
+
+# Install all DLLs in the same directory as logviewer.exe
 if (WIN32)
     file(GLOB DLLS "${CMAKE_CURRENT_SOURCE_DIR}/libs/*.dll")
     install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-add_executable(randomKats ${PROJECT_SOURCE_DIR}/test/randomKats.cpp ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp)
-target_include_directories(randomKats PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(randomKats PRIVATE GTest::gtest GTest::gtest_main)
+if(${Qt6_VERSION} VERSION_LESS "6.5")
+    qt_generate_deploy_qml_app_script(
+        TARGET ${PROJECT_NAME}
+        FILENAME_VARIABLE deploy_script
+    )
+else()
+    qt_generate_deploy_qml_app_script(
+        TARGET ${PROJECT_NAME}
+        OUTPUT_SCRIPT deploy_script
+    )
+endif()
+install(SCRIPT ${deploy_script})
+
+# Copy Visual Studio runtime libraries
+if (MSVC)
+    include(InstallRequiredSystemLibraries)
+    install(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION  "${CMAKE_INSTALL_BINDIR}")
+endif()
+
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_VERSION "0.0.1")
+set(CPACK_PACKAGE_VENDOR "Trafalgar")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A Qt6 QML application for set of tools")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
+set(CPACK_PACKAGE_CONTACT "guoyawen98@gmail.com")
+
+# NSIS specific configuration
+set(CPACK_NSIS_DISPLAY_NAME ${PROJECT_NAME})
+set(CPACK_NSIS_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_NSIS_MODIFY_PATH ON)
+set(CPACK_NSIS_MUI_ICON ${CMAKE_CURRENT_SOURCE_DIR}/rc/tools.ico)
+set(CPACK_NSIS_MUI_UNIICON ${CMAKE_CURRENT_SOURCE_DIR}/rc/tools.ico)
+set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_INSTALL_BINDIR}/${PROJECT_NAME}.exe")
+set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+    CreateShortCut \\\"$DESKTOP\\\\gen_cert.lnk\\\" \\\"$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe\\\"
+")
+
+# WiX Toolset specific configuration
+set(CPACK_WIX_PRODUCT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/rc/tools.ico)
+set(CPACK_WIX_LICENSE_RTF ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.rtf)
+set(CPACK_WIX_UI_BANNER ${CMAKE_CURRENT_SOURCE_DIR}/rc/icon.png)
+set(CPACK_WIX_UI_DIALOG ${CMAKE_CURRENT_SOURCE_DIR}/rc/icon.png)
+# set(CPACK_WIX_PATCH_FILE "${PROJECT_SOURCE_DIR}/wix-patch.xml") # set environment variables
+
+# Choose packaging tool
+option(USE_NSIS "Use NSIS for packaging" ON)
+
+if(USE_NSIS)
+    set(CPACK_GENERATOR "NSIS")
+else()
+    set(CPACK_GENERATOR "WIX")
+endif()
+
+include(CPack)
