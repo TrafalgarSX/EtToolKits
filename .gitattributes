@@ -1,0 +1,10 @@
+*.cpp linguist-language=C++
+*.h linguist-language=C++
+# Line endings harmony
+* text=auto
+
+# binary files
+*.lib binary
+*.dll binary
+
+

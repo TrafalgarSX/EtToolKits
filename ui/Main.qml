@@ -133,14 +133,23 @@ DelWindow {
                 },
                 {
                     label: qsTr("检测工具"),
-                    iconSource: DelIcon.SkinOutlined,
-                    type: "group",
+                    iconSource: DelIcon.FundProjectionScreenOutlined,
                     menuChildren: [
                         {
                             key: "RandomTest",
                             label: qsTr("随机数检测"),
                             source: "qrc:/qt/qml/EtToolkitsQml/ui/test_tools/RandomTest.qml",
-                            isTheme: true
+                        }
+                    ]
+                },
+                {
+                    label: qsTr("证书工具"),
+                    iconSource: DelIcon.ToolOutlined,
+                    menuChildren: [
+                        {
+                            key: "GenCert",
+                            label: qsTr("证书生成"),
+                            source: "qrc:/qt/qml/EtToolkitsQml/ui/cert_tools/GenCert.qml",
                         }
                     ]
                 }

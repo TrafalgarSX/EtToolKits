@@ -1,10 +1,13 @@
+#include <DelegateUI/delapp.h>
+
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
 
-#include <DelegateUI/delapp.h>
+#include "cert_util/gen_cert.h"
 #include "random_test/RandomTest.h"
+
 
 const QString applicationVersion = "0.0.1";
 
@@ -24,6 +27,8 @@ int main(int argc, char* argv[])
 
     RandomTest randomTest;
     engine.rootContext()->setContextProperty("randomTest", &randomTest);
+    GenCertHelper genCertHelper;
+    engine.rootContext()->setContextProperty("genCertHelper", &genCertHelper);
 
     const QUrl url(QStringLiteral("qrc:/qt/qml/EtToolkitsQml/ui/Main.qml"));
 
@@ -34,4 +39,3 @@ int main(int argc, char* argv[])
 
     return app.exec();
 }
-

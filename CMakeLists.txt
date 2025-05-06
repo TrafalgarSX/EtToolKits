@@ -12,6 +12,7 @@ find_package(Qt6 COMPONENTS ShaderTools)
 find_package(folly CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(gtest CONFIG REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -20,6 +21,8 @@ qt_policy(SET QTP0004 NEW)
 
 list(APPEND PROJECT_SOURCES
             ${PROJECT_SOURCE_DIR}/src/main.cpp
+            ${PROJECT_SOURCE_DIR}/src/cert_util/openssl_util.cpp
+            ${PROJECT_SOURCE_DIR}/src/hex_util.cpp
             ${PROJECT_SOURCE_DIR}/rc/logo.rc
 )
 
@@ -42,7 +45,7 @@ list(
   Qt6::Quick
   Qt6::QuickControls2
   DelegateUI$<$<CONFIG:Debug>:d>
-  Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util
+  OpenSSL::Crypto
 )
 
 set(WIN32_FLAG "")
@@ -67,9 +70,12 @@ qt_add_qml_module(${PROJECT_NAME}
         ui/AboutPage.qml 
         ui/SettingsPage.qml 
         ui/test_tools/RandomTest.qml 
+        ui/cert_tools/GenCert.qml 
+        ui/cert_tools/utils.js
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.h ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp
         ${PROJECT_SOURCE_DIR}/src/random_test/RandomTest.h ${PROJECT_SOURCE_DIR}/src/random_test/RandomTest.cpp
+        ${PROJECT_SOURCE_DIR}/src/cert_util/gen_cert.h ${PROJECT_SOURCE_DIR}/src/cert_util/gen_cert.cpp
     RESOURCES
         ui/fonts/HackNerdFont-Regular.ttf
         rc/icon.png
@@ -135,6 +141,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
 set(CPACK_PACKAGE_CONTACT "guoyawen98@gmail.com")
 
 # NSIS specific configuration
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)  # 在安装前卸载旧版本
 set(CPACK_NSIS_DISPLAY_NAME ${PROJECT_NAME})
 set(CPACK_NSIS_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_NSIS_MODIFY_PATH ON)
@@ -142,8 +149,30 @@ set(CPACK_NSIS_MUI_ICON ${CMAKE_CURRENT_SOURCE_DIR}/rc/tools.ico)
 set(CPACK_NSIS_MUI_UNIICON ${CMAKE_CURRENT_SOURCE_DIR}/rc/tools.ico)
 set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_INSTALL_BINDIR}/${PROJECT_NAME}.exe")
 set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
-    CreateShortCut \\\"$DESKTOP\\\\gen_cert.lnk\\\" \\\"$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe\\\"
+    CreateShortCut \\\"$DESKTOP\\\\${PROJECT_NAME}.lnk\\\" \\\"$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe\\\"
 ")
+set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+    Delete \\\"$DESKTOP\\\\${PROJECT_NAME}.lnk\\\"
+")
+
+set(CPACK_NSIS_MUI_WELCOME_PAGE_TITLE "${PROJECT_NAME} Setup Wizard")
+set(CPACK_NSIS_MUI_WELCOME_PAGE_TEXT "Welcome to the ${PROJECT_NAME} Setup Wizard")
+set(CPACK_NSIS_MUI_WELCOME_PAGE_TITLE_FINISH "${PROJECT_NAME} Setup Wizard Complete")
+set(CPACK_NSIS_MUI_WELCOME_PAGE_TEXT_FINISH "The ${PROJECT_NAME} Setup Wizard has completed installing ${PROJECT_NAME}.")
+set(CPACK_NSIS_MUI_FINISH_TEXT "The ${PROJECT_NAME} Setup Wizard has completed installing ${PROJECT_NAME}.")
+set(CPACK_NSIS_MUI_FINISH_TEXT_FINISH "The ${PROJECT_NAME} Setup Wizard has completed installing ${PROJECT_NAME}.")
+
+set(CPACK_NSIS_MUI_FINISHPAGE_RUN ON) # Run the application after installation
+set(CPACK_NSIS_CREATE_ICONS_EXTRA "
+    CreateShortCut \\\"$SMPROGRAMS\\\\${PROJECT_NAME}.lnk\\\" \\\"$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe\\\"
+    CreateShortCut \\\"$SMPROGRAMS\\\\${PROJECT_NAME}\\\\Uninstall.lnk\\\" \\\"$INSTDIR\\\\Uninstall.exe\\\"
+")
+
+set(CPACK_NSIS_DELETE_ICONS_EXTRA "
+    Delete \\\"$SMPROGRAMS\\\\${PROJECT_NAME}.lnk\\\"
+    Delete \\\"$SMPROGRAMS\\\\${PROJECT_NAME}\\\\Uninstall.lnk\\\"
+")
+
 
 # WiX Toolset specific configuration
 set(CPACK_WIX_PRODUCT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/rc/tools.ico)

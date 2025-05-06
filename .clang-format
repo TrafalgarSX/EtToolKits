@@ -6,6 +6,10 @@ PointerAlignment: Left
 TabWidth: 4
 UseTab: Never
 BreakBeforeBraces: Custom
+Standard:        c++17
+Cpp11BracedListStyle: true
+SpaceBeforeAssignmentOperators: true
+SortIncludes:    true
 BraceWrapping:
   AfterFunction: true
   AfterClass: true 
