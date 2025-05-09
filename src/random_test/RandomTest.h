@@ -87,6 +87,8 @@ class RandomTest : public QObject
     Q_INVOKABLE void significantLevel(double significantLevel);
     Q_INVOKABLE QList<QVariant> checkSampleInfo(QString localFilePath);
 
+    Q_INVOKABLE void generateRandomTestData(QString localDir);
+
     double progress() const;
     void setProgress(double progress);
     QString sampleUrl() const { return m_sampleUrl; }
@@ -98,6 +100,7 @@ class RandomTest : public QObject
     void progressChanged(double progress);  // Notify that progress has changed
     void randomTestSuccess(QString testRetInfo);  // Notify that random test succeeded
     void randomTestFailed(QString testRetInfo);  // Notify that random test failed
+    void randomTestDataGenerated(bool genRet);  // Notify that random test data has been generated
 
    private slots:
     void onFileDataReady(QList<int> algorithms);  // Slot to handle the file data ready signal

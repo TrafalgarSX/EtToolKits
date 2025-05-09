@@ -9,15 +9,17 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2)
 find_package(Qt6 COMPONENTS ShaderTools)
-find_package(folly CONFIG REQUIRED)
+# find_package(folly CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(gtest CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_policy(SET QTP0001 NEW)
-qt_policy(SET QTP0004 NEW)
+if(QT_VERSION VERSION_GREATER_EQUAL 6.8)
+    qt_policy(SET QTP0004 NEW)
+endif()
 
 list(APPEND PROJECT_SOURCES
             ${PROJECT_SOURCE_DIR}/src/main.cpp
@@ -34,6 +36,7 @@ list(APPEND PROJECT_INCLUDES
 list(APPEND DEFINITIONS $<$<CONFIG:Debug>:QT_QML_DEBUG>)
 
 list(APPEND LIBS_DIRS ${PROJECT_SOURCE_DIR}/libs)
+list(APPEND EXTRA_COMPILE_FLAGS $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 list(
   APPEND
@@ -45,7 +48,9 @@ list(
   Qt6::Quick
   Qt6::QuickControls2
   DelegateUI$<$<CONFIG:Debug>:d>
+  EtRngs$<$<CONFIG:Debug>:d>
   OpenSSL::Crypto
+  fmt::fmt-header-only
 )
 
 set(WIN32_FLAG "")
@@ -58,7 +63,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_INCLUDES})
 target_link_directories(${PROJECT_NAME} PUBLIC ${LIBS_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${DEFINITIONS})
-
 target_compile_options(${PROJECT_NAME} PRIVATE ${EXTRA_COMPILE_FLAGS})
 
 qt_add_qml_module(${PROJECT_NAME}

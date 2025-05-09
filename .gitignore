@@ -48,3 +48,5 @@ CMakeUserPresets.json
 .qmlls.ini
 
 vs2022-v64-ninja-preset/
+vs2019-v64-ninja-preset/
+data/

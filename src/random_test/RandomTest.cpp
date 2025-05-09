@@ -1,10 +1,12 @@
 #include "RandomTest.h"
-
 #include <QDebug>
 #include <QUrl>
 #include <cmath>
 
 #include "self_test_rand.h"
+#include <fmt/format.h>
+#include <EtRng/EtRng.h>
+#include <fstream>
 
 RandomTest::RandomTest(QObject* parent) : QObject(parent)
 {
@@ -619,4 +621,63 @@ int checkQRange(double Q)
 {
     assert(Q >= 0.0 && Q <= 1.0); // 如果 Q 超出范围，程序会在调试模式下终止
     return static_cast<int>(Q * 10); // 每 0.1 为一个区间，直接乘以 10 并取整即可
+}
+
+
+void RandomTest::generateRandomTestData(QString localDir)
+{
+    m_threadPoolPtr->submit([this, localDir]() {
+        u32 u32Result = 0;
+        std::string pers = "Test personalization string";
+        ETHANDLE hHandle = nullptr;
+        int nRandomLen = 1000 * 1000 / 8;  // 每个文件的随机数大小
+        std::array<u8, 32> randomData = {};
+        int loopCount = nRandomLen / randomData.size();
+
+        QDir dir(localDir);
+        if (!dir.exists()) {
+            if (!dir.mkpath(localDir)) {
+                qDebug() << "Failed to create directory:" << localDir;
+                u32Result = -1;
+                goto END;
+            }
+        }
+
+        u32Result = EtRngLibInit(nullptr, 0);
+        IF_FAIL_GOTO_END(u32Result != 0);
+        u32Result = EtRngGetInstance((const u8*)pers.c_str(), static_cast<int>(pers.size()), &hHandle);
+        IF_FAIL_GOTO_END(u32Result != 0);
+        u32Result = EtRngReseed(hHandle, nullptr, 0, nullptr, 0);
+        IF_FAIL_GOTO_END(u32Result != 0);
+
+        // 生成 1000 个文件
+        for (int fileIndex = 0; fileIndex < 1000; ++fileIndex) {
+            // 生成文件名
+            std::string fileName = fmt::format("{}/random{:03d}.bin", localDir.toStdString(), fileIndex);
+            // 打开文件
+            std::ofstream outFile(fileName, std::ios::binary);
+            if (!outFile) {
+                qDebug() << "Failed to open file for writing:" << QString::fromStdString(fileName);
+                u32Result = -1;
+                goto END;
+            }
+
+            // 写入随机数到文件
+            for (int i = 0; i < loopCount; ++i) {
+                u32Result = EtRngGenerate(hHandle, nullptr, 0, static_cast<int>(randomData.size()), randomData.data());
+                IF_FAIL_GOTO_END(u32Result != 0);
+                outFile.write(reinterpret_cast<const char*>(randomData.data()), randomData.size());
+                if (!outFile) {
+                    qDebug() << "Failed to write to file:" << QString::fromStdString(fileName);
+                    u32Result = -1;
+                    goto END;
+                }
+                std::fill(randomData.begin(), randomData.end(), 0);  // 清空缓冲区
+            }
+        }
+    END:
+        EtRngReleaseInstance(&hHandle);
+        EtRngLibRelease();
+        emit randomTestDataGenerated(u32Result == 0);
+    });
 }

@@ -417,7 +417,7 @@ Flickable {
                     width: progressBar.width * 0.5
                     type: DelButton.Type_Filled
                     onClicked: {
-                        // TODO call drng generate function
+                        randomTest.generateRandomTestData(testDataDirUrl.text)
                     }
                 }
             }
@@ -552,6 +552,17 @@ Flickable {
             main.setTestTime()
             popupText.text = testRetInfo;
             testRetPopup.open();
+        }
+    }
+
+    Connections{
+        target: randomTest
+        function onRandomTestDataGenerated(genRet) {
+            if(genRet) {
+                message.success("测试数据生成成功！")
+            } else {
+                message.error("测试数据生成失败！")
+            }
         }
     }
 
