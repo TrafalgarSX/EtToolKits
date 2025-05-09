@@ -50,3 +50,6 @@ CMakeUserPresets.json
 vs2022-v64-ninja-preset/
 vs2019-v64-ninja-preset/
 data/
+
+!EtRngs.lib
+!EtRngsd.lib
