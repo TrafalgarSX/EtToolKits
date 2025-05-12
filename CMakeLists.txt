@@ -9,7 +9,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2)
 find_package(Qt6 COMPONENTS ShaderTools)
-# find_package(folly CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -69,12 +68,14 @@ qt_add_qml_module(${PROJECT_NAME}
     URI "${PROJECT_NAME}Qml"
     VERSION 1.0
     QML_FILES
-        ui/Main.qml 
-        ui/HomePage.qml 
-        ui/AboutPage.qml 
-        ui/SettingsPage.qml 
-        ui/test_tools/RandomTest.qml 
-        ui/cert_tools/GenCert.qml 
+        ui/Main.qml
+        ui/HomePage.qml
+        ui/AboutPage.qml
+        ui/SettingsPage.qml
+        ui/SystemTray.qml
+        # ui/ToolSearchDialog.qml
+        ui/test_tools/RandomTest.qml
+        ui/cert_tools/GenCert.qml
         ui/cert_tools/utils.js
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.h ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp

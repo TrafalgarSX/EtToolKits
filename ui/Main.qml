@@ -30,7 +30,7 @@ DelWindow {
                             }
 
     Component.onCompleted: {
-        setSpecialEffect(DelWindow.MicaAlt);
+        setSpecialEffect(DelWindow.Win_MicaAlt);
     }
     onWidthChanged: {
         galleryMenu.compactMode = width < 1100;
@@ -237,5 +237,10 @@ DelWindow {
                 }
             }
         }
+    }
+
+    SystemTray {
+        id: toolKitsTray
+        windowId: root
     }
 }

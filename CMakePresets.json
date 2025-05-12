@@ -26,8 +26,8 @@
 				"CMAKE_TOOLCHAIN_FILE": "c:/workspace/opensource/vcpkg/scripts/buildsystems/vcpkg.cmake",
 				"CMAKE_INSTALL_PREFIX": "${sourceDir}/${presetName}/install",
 				"CMAKE_CXX_COMPILER": "cl.exe",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
-                "QT_QML_GENERATE_QMLLS_INI": "TRUE"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "QT_QML_GENERATE_QMLLS_INI": "ON"
 			},
 			"environment": {
                 "PATH": "$penv{PATH};C:/Qt/6.8.1/msvc2022_64/bin"
@@ -50,8 +50,8 @@
 				"CMAKE_INSTALL_PREFIX": "${sourceDir}/${presetName}/install",
 				"CMAKE_CXX_COMPILER": "cl.exe",
 				"CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
-                "QT_QML_GENERATE_QMLLS_INI": "TRUE"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "QT_QML_GENERATE_QMLLS_INI": "ON"
 			},
 			"environment": {
                 "PATH": "$penv{PATH};C:/Qt/Qt5.15/6.7.3/msvc2019_64/bin"
@@ -67,8 +67,8 @@
 				"CMAKE_TOOLCHAIN_FILE": "/home/data/vcpkg/scripts/buildsystems/vcpkg.cmake",
 				"CMAKE_INSTALL_PREFIX": "${sourceDir}/${presetName}/install",
 				"CMAKE_CXX_COMPILER": "g++",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-                "QT_QML_GENERATE_QMLLS_INI": "TRUE"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "QT_QML_GENERATE_QMLLS_INI": "ON"
 			}
 		}
 	],
