@@ -27,7 +27,8 @@
 				"CMAKE_INSTALL_PREFIX": "${sourceDir}/${presetName}/install",
 				"CMAKE_CXX_COMPILER": "cl.exe",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "QT_QML_GENERATE_QMLLS_INI": "ON"
+                "QT_QML_GENERATE_QMLLS_INI": "ON",
+                "QT_DEFAULT_MAJOR_VERSION": "6"
 			},
 			"environment": {
                 "PATH": "$penv{PATH};C:/Qt/6.8.1/msvc2022_64/bin"
@@ -51,7 +52,8 @@
 				"CMAKE_CXX_COMPILER": "cl.exe",
 				"CMAKE_C_COMPILER": "cl.exe",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "QT_QML_GENERATE_QMLLS_INI": "ON"
+                "QT_QML_GENERATE_QMLLS_INI": "ON",
+                "QT_DEFAULT_MAJOR_VERSION": "6"
 			},
 			"environment": {
                 "PATH": "$penv{PATH};C:/Qt/Qt5.15/6.7.3/msvc2019_64/bin"
@@ -68,7 +70,8 @@
 				"CMAKE_INSTALL_PREFIX": "${sourceDir}/${presetName}/install",
 				"CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "QT_QML_GENERATE_QMLLS_INI": "ON"
+                "QT_QML_GENERATE_QMLLS_INI": "ON",
+                "QT_DEFAULT_MAJOR_VERSION": "6"
 			}
 		}
 	],

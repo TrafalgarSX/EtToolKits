@@ -4,6 +4,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
+#include <QHotkey>
+#include <QDebug>
 
 #include "cert_util/gen_cert.h"
 #include "random_test/RandomTest.h"
@@ -36,6 +38,12 @@ int main(int argc, char* argv[])
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
     engine.load(url);
+
+	auto startKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
+	QObject::connect(startKey, &QHotkey::activated, []() {
+        qDebug() << "Hotkey activated!";
+    });
+					
 
     return app.exec();
 }

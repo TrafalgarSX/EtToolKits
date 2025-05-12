@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+message("qt major version: ${QT_DEFAULT_MAJOR_VERSION}")
+
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2)
 find_package(Qt6 COMPONENTS ShaderTools)
 find_package(fmt CONFIG REQUIRED)
@@ -30,12 +32,16 @@ list(APPEND PROJECT_SOURCES
 list(APPEND PROJECT_INCLUDES
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/src
+  ${PROJECT_SOURCE_DIR}/3rdparty/QHotkey/QHotkey
 )
 
 list(APPEND DEFINITIONS $<$<CONFIG:Debug>:QT_QML_DEBUG>)
 
 list(APPEND LIBS_DIRS ${PROJECT_SOURCE_DIR}/libs)
 list(APPEND EXTRA_COMPILE_FLAGS $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+list(APPEND EXTRA_COMPILE_FLAGS $<$<C_COMPILER_ID:MSVC>:/utf-8>)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/QHotkey)
 
 list(
   APPEND
@@ -50,6 +56,7 @@ list(
   EtRngs$<$<CONFIG:Debug>:d>
   OpenSSL::Crypto
   fmt::fmt-header-only
+  QHotkey::QHotkey
 )
 
 set(WIN32_FLAG "")

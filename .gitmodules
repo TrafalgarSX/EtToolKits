@@ -1,0 +1,3 @@
+[submodule "3rdparty/QHotkey"]
+	path = 3rdparty/QHotkey
+	url = git@github.com:TrafalgarSX/QHotkey.git
