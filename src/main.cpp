@@ -9,6 +9,7 @@
 
 #include "cert_util/gen_cert.h"
 #include "random_test/RandomTest.h"
+#include "plugins/ToolManager.h"
 
 
 const QString applicationVersion = "0.0.1";
@@ -23,6 +24,10 @@ int main(int argc, char* argv[])
     app.setApplicationName("EtToolKits");
     app.setApplicationDisplayName("EtToolKits");
     app.setApplicationVersion(applicationVersion);
+
+    // 注册 ToolManager 单例到 QML
+    qmlRegisterSingletonInstance("EtToolKits", 1, 0, "ToolManager", ToolManager::instance());
+
 
     QQmlApplicationEngine engine;
     DelApp::initialize(&engine);
@@ -39,11 +44,31 @@ int main(int argc, char* argv[])
         Qt::QueuedConnection);
     engine.load(url);
 
-	auto startKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
-	QObject::connect(startKey, &QHotkey::activated, []() {
-        qDebug() << "Hotkey activated!";
+	auto callPluginKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
+    QObject::connect(callPluginKey, &QHotkey::activated, [&engine]() {
+        // 动态创建或显示插件窗口
+        QObject* pluginWin = nullptr;
+        // 遍历已加载对象，避免重复创建
+        for (QObject* obj : engine.rootObjects()) {
+            if (obj->objectName() == "pluginMainWindow") {
+                pluginWin = obj;
+                break;
+            }
+        }
+        if (!pluginWin) {
+            // 第一次创建
+            engine.load(QUrl(QStringLiteral("qrc:/qt/qml/EtToolkitsQml/ui/plugins/PluginMainWindow.qml")));
+            for (QObject* obj : engine.rootObjects()) {
+                if (obj->objectName() == "pluginMainWindow") {
+                    pluginWin = obj;
+                    break;
+                }
+            }
+        }
+        if (pluginWin) {
+            QMetaObject::invokeMethod(pluginWin, "showWindow");
+        }
     });
-					
 
     return app.exec();
 }
