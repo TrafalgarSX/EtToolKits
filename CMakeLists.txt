@@ -16,7 +16,7 @@ find_package(OpenSSL REQUIRED)
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_policy(SET QTP0001 NEW)
-if(QT_VERSION VERSION_GREATER_EQUAL 6.8)
+if(QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)
 endif()
 
