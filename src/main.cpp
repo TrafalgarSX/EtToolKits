@@ -45,18 +45,26 @@ int main(int argc, char* argv[])
         Qt::QueuedConnection);
     engine.load(url);
 
-	// auto callPluginKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
-	auto callPluginKey = new QHotkey(QKeySequence(Qt::AltModifier | Qt::Key_Space), true, &app);
-    static QQuickView* pluginView = nullptr;
-    QObject::connect(callPluginKey, &QHotkey::activated, [&engine]() {
+	auto callPluginKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
+	// auto callPluginKey = new QHotkey(QKeySequence(Qt::AltModifier | Qt::Key_Space), true, &app);
+    QQmlApplicationEngine* enginePlugin = nullptr;
+    QObject::connect(callPluginKey, &QHotkey::activated, [&enginePlugin, &app]() {
         qDebug() << "Hotkey activated!";
-        if (!pluginView) {
-            pluginView = new QQuickView;
-            pluginView->setSource(QUrl("qrc:/qt/qml/EtToolkitsQml/ui/plugins/PluginMainWindow.qml"));
-            pluginView->setResizeMode(QQuickView::SizeRootObjectToView);
+        const QUrl url(QStringLiteral("qrc:/qt/qml/EtToolkitsQml/ui/plugins/PluginMainWindow.qml"));
+        if(!enginePlugin) {
+            enginePlugin = new QQmlApplicationEngine;
+            QObject::connect(
+                        enginePlugin, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
+                        Qt::QueuedConnection);
+            enginePlugin->load(url);
         }
-        pluginView->show();
-        pluginView->requestActivate();  // 把它提到最前
+        // call pluginwindow js function
+        if(enginePlugin->rootObjects().isEmpty()){
+            return;
+        }
+        QObject *rootObject = enginePlugin->rootObjects().first();
+        // 调用 QML 中的函数
+        QMetaObject::invokeMethod(rootObject, "showPluginWindow");
     });
 
     return app.exec();

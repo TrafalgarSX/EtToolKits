@@ -10,7 +10,8 @@ ToolManager* ToolManager::instance()
 }
 ToolManager::ToolManager() 
 {
-    m_tools.append(new PathConvertTool(this));
+    m_tools.append(new UnixPathConvertTool(this));
+    m_tools.append(new WinPathConvertTool(this));
     // 继续注册其他插件
 
     for(ITool* tool : m_tools) {

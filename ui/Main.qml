@@ -239,8 +239,13 @@ DelWindow {
         }
     }
 
-    // SystemTray {
-    //     id: toolKitsTray
-    //     windowId: root
-    // }
+    Shortcut {
+        sequence: "Ctrl+W"
+        onActivated: Qt.quit()
+    }
+
+    SystemTray {
+        id: toolKitsTray
+        windowId: root
+    }
 }

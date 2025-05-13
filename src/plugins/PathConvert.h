@@ -8,11 +8,21 @@
 #include <QRegularExpression>
 
 // RandomTestTool.h
-class PathConvertTool : public ITool {
+class UnixPathConvertTool : public ITool {
     Q_OBJECT
 public:
-    explicit PathConvertTool(QObject* parent = nullptr) : ITool(parent) {}
-    ~PathConvertTool() override = default;
+    explicit UnixPathConvertTool(QObject* parent = nullptr) : ITool(parent) {}
+    ~UnixPathConvertTool() override = default;
+    QString name() const override; 
+    QString description() const override;
+    Q_INVOKABLE void process(QVariantMap argMap) override;
+};
+
+class WinPathConvertTool : public ITool {
+    Q_OBJECT
+public:
+    explicit WinPathConvertTool(QObject* parent = nullptr) : ITool(parent) {}
+    ~WinPathConvertTool() override = default;
     QString name() const override; 
     QString description() const override;
     Q_INVOKABLE void process(QVariantMap argMap) override;
