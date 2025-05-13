@@ -2,7 +2,7 @@ import QtQuick
 import DelegateUI
 import Qt.labs.platform
 
-DelRectangle {
+Rectangle {
     id: root
     width: 80
     height: 200

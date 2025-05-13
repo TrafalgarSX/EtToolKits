@@ -4,6 +4,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
+#include <QQuickView>
 #include <QHotkey>
 #include <QDebug>
 
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
     app.setApplicationVersion(applicationVersion);
 
     // 注册 ToolManager 单例到 QML
-    qmlRegisterSingletonInstance("EtToolKits", 1, 0, "ToolManager", ToolManager::instance());
+    qmlRegisterSingletonInstance("EtToolKitsPlugin", 1, 0, "ToolManager", ToolManager::instance());
 
 
     QQmlApplicationEngine engine;
@@ -44,30 +45,18 @@ int main(int argc, char* argv[])
         Qt::QueuedConnection);
     engine.load(url);
 
-	auto callPluginKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
+	// auto callPluginKey = new QHotkey(QKeySequence(Qt::ControlModifier |Qt::AltModifier | Qt::Key_Z), true, &app);
+	auto callPluginKey = new QHotkey(QKeySequence(Qt::AltModifier | Qt::Key_Space), true, &app);
+    static QQuickView* pluginView = nullptr;
     QObject::connect(callPluginKey, &QHotkey::activated, [&engine]() {
-        // 动态创建或显示插件窗口
-        QObject* pluginWin = nullptr;
-        // 遍历已加载对象，避免重复创建
-        for (QObject* obj : engine.rootObjects()) {
-            if (obj->objectName() == "pluginMainWindow") {
-                pluginWin = obj;
-                break;
-            }
+        qDebug() << "Hotkey activated!";
+        if (!pluginView) {
+            pluginView = new QQuickView;
+            pluginView->setSource(QUrl("qrc:/qt/qml/EtToolkitsQml/ui/plugins/PluginMainWindow.qml"));
+            pluginView->setResizeMode(QQuickView::SizeRootObjectToView);
         }
-        if (!pluginWin) {
-            // 第一次创建
-            engine.load(QUrl(QStringLiteral("qrc:/qt/qml/EtToolkitsQml/ui/plugins/PluginMainWindow.qml")));
-            for (QObject* obj : engine.rootObjects()) {
-                if (obj->objectName() == "pluginMainWindow") {
-                    pluginWin = obj;
-                    break;
-                }
-            }
-        }
-        if (pluginWin) {
-            QMetaObject::invokeMethod(pluginWin, "showWindow");
-        }
+        pluginView->show();
+        pluginView->requestActivate();  // 把它提到最前
     });
 
     return app.exec();

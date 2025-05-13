@@ -1,56 +1,60 @@
 import QtQuick
 import QtQuick.Controls
+import DelegateUI
+import EtToolKitsPlugin
 
-Window {
+Rectangle {
     id: pluginWindow
-    width: 500; height: 600
-    visible: false
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    width: 800; height: 200
+    visible: true
 
-    function showWindow() {
-        pluginWindow.visible = true
-        searchField.forceActiveFocus()
-    }
-
-    DelRectangle {
-        anchors.fill: parent
-        color: "#222"
-        Column {
-            anchors.fill: parent; spacing: 8; padding: 16
-            DelInput {
-                id: searchField
-                placeholderText: "搜索插件…"
-                onTextChanged: pluginListView.model = ToolManager.filteredTools(searchField.text)
-            }
-            ListView {
-                id: pluginListView
-                height: 200
+    Column {
+        anchors.fill: parent; 
+        spacing: 8; 
+        padding: 16
+        DelInput {
+            id: searchField
+            width: parent.width - 20
+            placeholderText: "搜索插件…"
+        }
+        DelDivider {
+            width: pluginWindow.width
+            height: 1
+        }
+        // Use Flow of Buttons instead of ListView
+        Flow {
+            width: parent.width - 20
+            spacing: 8
+            Repeater {
                 model: ToolManager.filteredTools(searchField.text)
-                delegate: ItemDelegate {
+                delegate: Button {
                     text: modelData.name
                     onClicked: {
                         ToolManager.selectTool(modelData.name)
                         paramInput.text = ""
                         pluginViewLoader.sourceComponent = null
-                        if (modelData.hasCustomView)
-                            pluginViewLoader.sourceComponent = modelData.customViewComponent
+                        if (hasCustomView) {
+                            pluginViewLoader.sourceComponent = customViewComponent
+                        }
                     }
                 }
             }
-            DelInput {
-                id: paramInput
-                placeholderText: "输入参数，回车执行"
-                onAccepted: {
-                    let result = ToolManager.runTool(ToolManager.selectedToolName, paramInput.text)
-                    Qt.application.clipboard.setText(result)
-                    pluginWindow.visible = false
-                }
+        }
+        DelInput {
+            id: paramInput
+            width: parent.width - 20
+            placeholderText: "输入参数，回车执行"
+            onAccepted: {
+                const arg = new Object()
+                arg["path"] = paramInput.text
+                arg["style"] = 2
+                ToolManager.runTool(ToolManager.selectedToolName, arg)
             }
-            Loader {
-                id: pluginViewLoader
-                anchors.top: paramInput.bottom
-                width: parent.width
-            }
+        }
+        Loader {
+            id: pluginViewLoader
+            anchors.top: paramInput.bottom
+            width: parent.width
         }
     }
 }

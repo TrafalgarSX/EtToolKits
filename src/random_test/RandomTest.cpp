@@ -74,18 +74,14 @@ RandomTest::~RandomTest() {
 QVariantList RandomTest::getRandomTestDataAsVariantList() const
 {
     QVariantList list;
-
-    for (int i = 0; i < m_randomTestData.size(); ++i) {
-        QVariantMap map;
-        map["randTestAlgorithm"] = m_randomTestData[i]->m_randTestAlgorithm;
-        map["significantLevelSampleCount"] = m_randomTestData[i]->m_significantLevelSampleCount.load();
-        map["nonSignificantLevelSampleCount"] = m_randomTestData[i]->m_nonSignificantLevelSampleCount.load();
-        map["uniformityPTValue"] = QString::number(m_randomTestData[i]->m_uniformityPTValue, 'f', 4);
-        map["key"] = QString::number(static_cast<int>(m_randomTestData[i]->m_key));
-        list.append(map);
-    }
-
     for (const auto& data : m_randomTestData) {
+        QVariantMap map;
+        map["randTestAlgorithm"] = data->m_randTestAlgorithm;
+        map["significantLevelSampleCount"] = data->m_significantLevelSampleCount.load();
+        map["nonSignificantLevelSampleCount"] = data->m_nonSignificantLevelSampleCount.load();
+        map["uniformityPTValue"] = QString::number(data->m_uniformityPTValue, 'f', 4);
+        map["key"] = QString::number(static_cast<int>(data->m_key));
+        list.append(map);
     }
     return list;
 }

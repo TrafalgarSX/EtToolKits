@@ -16,10 +16,12 @@ public:
     QQmlListProperty<ITool> tools();
     Q_INVOKABLE QVariantList filteredTools(const QString& keyword);
     Q_INVOKABLE void selectTool(const QString& name);
-    Q_INVOKABLE QString runTool(const QString& name, const QString& input);
+    Q_INVOKABLE QString runTool(const QString& name, const QVariantMap& argMap);
     QString selectedToolName() const;
 signals:
     void selectedToolChanged();
+    void toolRunFailed(const QString& name, const QString& error);
+    void toolRunSuccess(const QString& name, const QString& result);
 private:
     ToolManager();
 private:

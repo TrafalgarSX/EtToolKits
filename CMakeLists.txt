@@ -80,14 +80,19 @@ qt_add_qml_module(${PROJECT_NAME}
         ui/AboutPage.qml
         ui/SettingsPage.qml
         ui/SystemTray.qml
-        # ui/ToolSearchDialog.qml
         ui/test_tools/RandomTest.qml
         ui/cert_tools/GenCert.qml
         ui/cert_tools/utils.js
+        # plugins
+        ui/plugins/PluginMainWindow.qml
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.h ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp
         ${PROJECT_SOURCE_DIR}/src/random_test/RandomTest.h ${PROJECT_SOURCE_DIR}/src/random_test/RandomTest.cpp
         ${PROJECT_SOURCE_DIR}/src/cert_util/gen_cert.h ${PROJECT_SOURCE_DIR}/src/cert_util/gen_cert.cpp
+        # plugins
+        ${PROJECT_SOURCE_DIR}/src/plugins/ITool.h 
+        ${PROJECT_SOURCE_DIR}/src/plugins/PathConvert.h ${PROJECT_SOURCE_DIR}/src/plugins/PathConvert.cpp
+        ${PROJECT_SOURCE_DIR}/src/plugins/ToolManager.h ${PROJECT_SOURCE_DIR}/src/plugins/ToolManager.cpp
     RESOURCES
         ui/fonts/HackNerdFont-Regular.ttf
         rc/icon.png
