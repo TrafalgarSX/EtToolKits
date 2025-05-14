@@ -1,5 +1,6 @@
 #include "ToolManager.h"
 #include "PathConvert.h"
+#include "RecentProjects.h"
 #include <QMetaObject>
 
 // ToolManager.cpp
@@ -12,6 +13,7 @@ ToolManager::ToolManager()
 {
     m_tools.append(new UnixPathConvertTool(this));
     m_tools.append(new WinPathConvertTool(this));
+    m_tools.append(new RecentProjectsVSC(this));
     // 继续注册其他插件
 
     for(ITool* tool : m_tools) {
@@ -48,7 +50,7 @@ QVariantList ToolManager::filteredTools(const QString& keyword)
     return toolList;
 }
 
-Q_INVOKABLE QVariantList ToolManager::allTools()
+QVariantList ToolManager::allTools()
 {
     QVariantList toolList;
     for(ITool* tool : m_tools) {
@@ -63,6 +65,17 @@ Q_INVOKABLE QVariantList ToolManager::allTools()
     return toolList;
 }
 
+
+QVariantList ToolManager::recentProjectsVSC()
+{
+    for(ITool* tool : m_tools) {
+        if (tool->name() == m_selectedToolName) {
+            QVariantList recentProjects = static_cast<RecentProjectsVSC*>(tool)->recentProjects();
+            return recentProjects;
+        }
+    }
+}
+
 void ToolManager::selectTool(const QString& name)
 {
     for (ITool* tool : m_tools) {
@@ -75,11 +88,11 @@ void ToolManager::selectTool(const QString& name)
     // 如果没有找到工具，可能需要处理错误
 }
 
-QString ToolManager::runTool(const QString& name, const QVariantMap& argMap)
+QString ToolManager::runTool(const QVariantMap& argMap)
 
 {
     for (ITool* tool : m_tools) {
-        if (tool->name() == name) {
+        if (tool->name() == m_selectedToolName) {
             // 假设工具有一个 process 方法
             QMetaObject::invokeMethod(tool, [=]() {
                 tool->process(argMap);

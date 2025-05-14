@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QUrl>
 #include <QQmlEngine>
 
 // ITool.h
@@ -12,7 +13,7 @@ class ITool : public QObject {
 public:
     explicit ITool(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~ITool() = default;
-    virtual QString icon() const = 0;
+    virtual QUrl icon() const = 0;
     virtual QString name() const = 0;
     virtual QString description() const = 0;
     virtual bool hasCustomView() const { return false; }

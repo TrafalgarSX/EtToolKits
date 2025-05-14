@@ -1,6 +1,6 @@
 #include "PathConvert.h"
 
-QString UnixPathConvertTool::icon() const { return ""; }
+QUrl UnixPathConvertTool::icon() const { return QUrl("qrc:/qt/qml/EtToolkitsQml/rc/windows.png"); }
 
 QString UnixPathConvertTool::name() const { return "windows path convert(Unix style)"; }
 
@@ -27,10 +27,10 @@ void UnixPathConvertTool::process(QVariantMap argMap)
     // 将结果复制到剪贴板
     QClipboard* clipboard = QGuiApplication::clipboard();
     clipboard->setText(result);
-    emit toolRunSuccess(name(), result);
+    emit toolRunSuccess(name(), "路径转换成功");
 }
 
-QString WinPathConvertTool::icon() const { return ""; }
+QUrl WinPathConvertTool::icon() const { return QUrl("qrc:/qt/qml/EtToolkitsQml/rc/windows.png"); }
 
 QString WinPathConvertTool::name() const { return "windows path convert(Win style)"; }
 
@@ -53,5 +53,5 @@ void WinPathConvertTool::process(QVariantMap argMap)
     // 将结果复制到剪贴板
     QClipboard* clipboard = QGuiApplication::clipboard();
     clipboard->setText(result);
-    emit toolRunSuccess(name(), result);
+    emit toolRunSuccess(name(), "路径转换成功");
 }

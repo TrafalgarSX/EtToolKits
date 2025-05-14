@@ -9,7 +9,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 message("qt major version: ${QT_DEFAULT_MAJOR_VERSION}")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2 Sql)
 find_package(Qt6 COMPONENTS ShaderTools)
 find_package(fmt CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
@@ -52,6 +52,7 @@ list(
   Qt6::Qml
   Qt6::Quick
   Qt6::QuickControls2
+  Qt6::Sql
   DelegateUI$<$<CONFIG:Debug>:d>
   EtRngs$<$<CONFIG:Debug>:d>
   OpenSSL::Crypto
@@ -85,6 +86,7 @@ qt_add_qml_module(${PROJECT_NAME}
         ui/cert_tools/utils.js
         # plugins
         ui/plugins/PluginMainWindow.qml
+        ui/plugins/RecentProjectsVSC.qml
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.h ${PROJECT_SOURCE_DIR}/src/random_test/self_test_rand.cpp
         ${PROJECT_SOURCE_DIR}/src/random_test/RandomTest.h ${PROJECT_SOURCE_DIR}/src/random_test/RandomTest.cpp
@@ -92,10 +94,13 @@ qt_add_qml_module(${PROJECT_NAME}
         # plugins
         ${PROJECT_SOURCE_DIR}/src/plugins/ITool.h 
         ${PROJECT_SOURCE_DIR}/src/plugins/PathConvert.h ${PROJECT_SOURCE_DIR}/src/plugins/PathConvert.cpp
+        ${PROJECT_SOURCE_DIR}/src/plugins/RecentProjects.h ${PROJECT_SOURCE_DIR}/src/plugins/RecentProjects.cpp
         ${PROJECT_SOURCE_DIR}/src/plugins/ToolManager.h ${PROJECT_SOURCE_DIR}/src/plugins/ToolManager.cpp
     RESOURCES
         ui/fonts/HackNerdFont-Regular.ttf
         rc/icon.png
+        rc/windows.png
+        rc/vscode.png
 )
 
 qt_add_shaders(${PROJECT_NAME} "shaders"

@@ -9,7 +9,10 @@ BreakBeforeBraces: Custom
 Standard:        c++17
 Cpp11BracedListStyle: true
 SpaceBeforeAssignmentOperators: true
-SortIncludes:    true
+SortIncludes: true
+ReflowComments: true
+# 连续空行的最大数量
+MaxEmptyLinesToKeep: 1
 BraceWrapping:
   AfterFunction: true
   AfterClass: true 
@@ -20,3 +23,12 @@ BraceWrapping:
   BeforeCatch: false
   BeforeElse: false
   AfterControlStatement: false
+
+# 允许短的函数放在同一行: None, InlineOnly(定义在类中), Empty(空函数), Inline(定义在类中，空函数), All
+AllowShortFunctionsOnASingleLine: Empty
+# 允许短的if语句保持在同一行
+AllowShortIfStatementsOnASingleLine: false
+# 允许短的循环保持在同一行
+AllowShortLoopsOnASingleLine: false
+# 连续声明时，对齐所有声明的变量名
+AlignConsecutiveDeclarations: true

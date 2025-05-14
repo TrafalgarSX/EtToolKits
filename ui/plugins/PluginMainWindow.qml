@@ -72,12 +72,12 @@ ApplicationWindow {
                     if(mainRect.isPluginInput) {
                         const arg = new Object()
                         arg["path"] = searchField.text
-                        ToolManager.runTool(ToolManager.selectedToolName, arg)
+                        ToolManager.runTool(arg)
                         searchField.text = ""
                     }
                 }
 
-                Keys.onPressed: {
+                Keys.onPressed: function(event) {
                     if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab) {
                         pluginList.forceActiveFocus()
                         event.accepted = true
@@ -119,11 +119,7 @@ ApplicationWindow {
                         spacing: 12
                         DelAvatar {
                             width: 40; height: 40
-                            textSource: "U"
-                            colorText: "#F56A00"
-                            colorBg: "#FDE3CF"
-                            // 优先展示图片，否则展示首字母
-                            // imageSource: modelData.icon ? modelData.icon : ""
+                            imageSource: modelData.icon
                         }
                         Column {
                             spacing: 2
@@ -158,23 +154,8 @@ ApplicationWindow {
                              mainRect.isPluginInput = true
                          }
                      }
-
-                     function activate() {
-                         console.log("Activated: " + modelData.name)
-                         ToolManager.selectTool(modelData.name)
-                         searchField.text = ""
-                         pluginList.visible = false
-                         pluginViewLoader.sourceComponent = null
-                         if (modelData.hasCustomView) {
-                            //  pluginViewLoader.sourceComponent = modelData.customViewComponent
-                             pluginViewLoader.source = modelData.source
-                         } else {
-                             searchField.forceActiveFocus()
-                             mainRect.isPluginInput = true
-                         }
-                     }
                 }
-                Keys.onPressed: (event) => {
+                Keys.onPressed: function(event) {
                     if (event.key === Qt.Key_Up) {
                         currentIndex = Math.max(0, currentIndex - 1)
                         event.accepted = true
@@ -182,14 +163,13 @@ ApplicationWindow {
                         currentIndex = Math.min(count - 1, currentIndex + 1)
                         event.accepted = true
                     } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                        currentItem?.activate()
+                        currentItem?.clicked()
                         event.accepted = true
                     }
                 }
             }
             Loader {
                 id: pluginViewLoader
-                anchors.top: pluginList.bottom
                 width: parent.width
             }
         }
