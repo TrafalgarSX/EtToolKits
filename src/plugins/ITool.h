@@ -9,16 +9,15 @@
 // ITool.h
 class ITool : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString description READ description CONSTANT)
-    Q_PROPERTY(bool hasCustomView READ hasCustomView CONSTANT)
 public:
     explicit ITool(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~ITool() = default;
+    virtual QString icon() const = 0;
     virtual QString name() const = 0;
     virtual QString description() const = 0;
     virtual bool hasCustomView() const { return false; }
-    virtual void process(QVariantMap argMap) = 0;
+    virtual QUrl customViewUrl() const { return QUrl(); }
+    virtual void process(QVariantMap argMap) { (void)argMap; };
     Q_INVOKABLE virtual QObject* customViewComponent(QQmlEngine*) { return nullptr; }
 signals:
     void toolRunFailed(const QString& name, const QString& error);

@@ -244,8 +244,8 @@ DelWindow {
         onActivated: Qt.quit()
     }
 
-    SystemTray {
-        id: toolKitsTray
-        windowId: root
-    }
+    // SystemTray {
+    //     id: toolKitsTray
+    //     windowId: root
+    // }
 }

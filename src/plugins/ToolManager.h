@@ -15,6 +15,7 @@ public:
     static ToolManager* instance();
     QQmlListProperty<ITool> tools();
     Q_INVOKABLE QVariantList filteredTools(const QString& keyword);
+    Q_INVOKABLE QVariantList allTools();
     Q_INVOKABLE void selectTool(const QString& name);
     Q_INVOKABLE QString runTool(const QString& name, const QVariantMap& argMap);
     QString selectedToolName() const;

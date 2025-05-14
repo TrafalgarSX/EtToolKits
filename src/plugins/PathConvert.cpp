@@ -1,5 +1,7 @@
 #include "PathConvert.h"
 
+QString UnixPathConvertTool::icon() const { return ""; }
+
 QString UnixPathConvertTool::name() const { return "windows path convert(Unix style)"; }
 
 QString UnixPathConvertTool::description() const { return R"(Windows 路径转换，转换Unix 风格： /)"; }
@@ -27,6 +29,8 @@ void UnixPathConvertTool::process(QVariantMap argMap)
     clipboard->setText(result);
     emit toolRunSuccess(name(), result);
 }
+
+QString WinPathConvertTool::icon() const { return ""; }
 
 QString WinPathConvertTool::name() const { return "windows path convert(Win style)"; }
 

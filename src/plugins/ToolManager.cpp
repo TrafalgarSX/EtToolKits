@@ -37,10 +37,28 @@ QVariantList ToolManager::filteredTools(const QString& keyword)
     for(ITool* tool : m_tools) {
         if (tool->name().contains(keyword, Qt::CaseInsensitive)) {
             QVariantMap toolInfo;
+            toolInfo["icon"] = tool->icon();
             toolInfo["name"] = tool->name();
             toolInfo["description"] = tool->description();
+            toolInfo["hasCustomView"] = tool->hasCustomView();
+            // toolInfo["customViewComponent"] = tool->customViewComponent();
             toolList.append(toolInfo);
         }
+    }
+    return toolList;
+}
+
+Q_INVOKABLE QVariantList ToolManager::allTools()
+{
+    QVariantList toolList;
+    for(ITool* tool : m_tools) {
+        QVariantMap toolInfo;
+        toolInfo["icon"] = tool->icon();
+        toolInfo["name"] = tool->name();
+        toolInfo["description"] = tool->description();
+        toolInfo["hasCustomView"] = tool->hasCustomView();
+        toolInfo["source"] = tool->customViewUrl();
+        toolList.append(toolInfo);
     }
     return toolList;
 }

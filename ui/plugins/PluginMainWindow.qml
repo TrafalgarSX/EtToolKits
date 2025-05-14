@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import DelegateUI
@@ -6,9 +8,9 @@ import EtToolKitsPlugin
 
 ApplicationWindow {
     id: pluginWindow
-    width: 800; 
-    height: 200
-    visible: false 
+    width: 800
+    height: 600
+    visible: false
     flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowMinimizeButtonHint
     color: "transparent" // 背景透明
 
@@ -17,27 +19,69 @@ ApplicationWindow {
     }
     function showPluginWindow() {
         pluginWindow.visible = true
+        pluginWindow.requestActivate()
     }
 
     DelRectangle {
         id: mainRect
-        anchors.fill: parent
+        width: pluginWindow.width
+        implicitHeight: contentColumn.implicitHeight
         radius: 8
-        anchors.margins: 5
-        border.width: 1
+        anchors.margins: 8
+        property bool isPluginInput: false // 是否是插件输入状态
 
         Column {
-            anchors.fill: parent; 
-            spacing: 8; 
+            id: contentColumn
+            anchors.fill: parent
+            spacing: 8
             padding: 16
             DelInput {
                 id: searchField
                 width: parent.width - 20
-                implicitHeight: 70
+                implicitHeight: 50
                 placeholderText: "搜索插件…"
                 DragHandler {
                     id: handler
                     onActiveChanged: if (active) pluginWindow.startSystemMove()
+                }
+
+                onTextChanged: {
+                    if (text.length > 0) {
+                        pluginList.visible = true
+                        pluginModel.clear()
+                        let toolList = ToolManager.allTools()
+                        for (var i = 0; i < toolList.length; i++) {
+                            var tool = toolList[i]
+                            if (tool.name.toLowerCase().indexOf(text.toLowerCase()) !== -1) {
+                                pluginModel.append({
+                                    name: tool.name,
+                                    description: tool.description,
+                                    icon: tool.icon,
+                                    hasCustomView: tool.hasCustomView,
+                                    // customViewComponent: tool.customViewComponent
+                                    source: tool.source
+                                })
+                            }
+                        }
+                    } else {
+                        pluginList.visible = false
+                    }
+                }
+
+                onAccepted: {
+                    if(mainRect.isPluginInput) {
+                        const arg = new Object()
+                        arg["path"] = searchField.text
+                        ToolManager.runTool(ToolManager.selectedToolName, arg)
+                        searchField.text = ""
+                    }
+                }
+
+                Keys.onPressed: {
+                    if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab) {
+                        pluginList.forceActiveFocus()
+                        event.accepted = true
+                    }
                 }
             }
             DelDivider {
@@ -46,26 +90,35 @@ ApplicationWindow {
             }
             // 插件列表
             ListView {
+                // --- 新增：可见的最大条目数和条目高度 ---
+                property int maxVisibleItems: 7
+                property int itemHeight: 60
+
                 id: pluginList
-                Layout.fillWidth: true
-                Layout.preferredHeight: 700
-                model: ToolManager.filteredTools(searchField.text)
-                clip: true
                 currentIndex: 0
+                clip: true
                 visible: true
-                ScrollBar.vertical: DelScrollBar { }
+                focus: true
+
+                width: pluginWindow.width
+                // 大小自动：少于 maxVisibleItems 时刚好包裹全部条目，多了就滚动
+                implicitHeight: Math.min(count, maxVisibleItems) * itemHeight
+
+                highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+                ScrollBar.vertical: DelScrollBar {}
+
+                model: ListModel { id: pluginModel }
                 delegate: ItemDelegate {
-                    width: parent.width
-                    background: Rectangle {
-                        color: ListView.isCurrentItem ? "#e0e7ef" : "#f5f6fa" // 高亮/普通灰色
-                        radius: 8
-                    }
+                    required property var modelData
+
+                    id: wrapper
+                    width: ListView.view.width - 20
+                    height: pluginList.itemHeight
+
                     contentItem: Row {
                         spacing: 12
-                        anchors.verticalCenter: parent.verticalCenter
                         DelAvatar {
                             width: 40; height: 40
-                            anchors.verticalCenter: parent.verticalCenter
                             textSource: "U"
                             colorText: "#F56A00"
                             colorBg: "#FDE3CF"
@@ -74,45 +127,52 @@ ApplicationWindow {
                         }
                         Column {
                             spacing: 2
-                            anchors.verticalCenter: parent.verticalCenter
                             DelText {
                                 text: modelData.name
-                                font.pixelSize: 18
-                                color: "#23272e"
-                                font.bold: true
-                                horizontalAlignment: Text.AlignLeft
-                            }
-                            DelText {
-                                text: modelData.description
-                                font.pixelSize: 13
-                                color: "#888"
-                                horizontalAlignment: Text.AlignLeft
-                                elide: Text.ElideRight
-                                width: parent.width - 60
-                            }
-                        }
-                    }
-                    onClicked: {
-                        ToolManager.selectTool(modelData.name)
-                        searchField.text = ""
-                        pluginViewLoader.sourceComponent = null
-                        if (modelData.hasCustomView) {
-                            pluginViewLoader.sourceComponent = modelData.customViewComponent
-                        } else {
-                            searchField.forceActiveFocus()
-                        }
-                    }
+                                 font.pixelSize: 18
+                                 color: "#23272e"
+                                 font.bold: true
+                                 horizontalAlignment: Text.AlignLeft
+                             }
+                             DelText {
+                                 text: modelData.description
+                                 font.pixelSize: 13
+                                 color: "#888"
+                                 horizontalAlignment: Text.AlignLeft
+                                 elide: Text.ElideRight
+                                 width: wrapper.ListView.view.width - 60
+                             }
+                         }
+                     }
+                     onClicked: {
+                         console.log("Clicked on: " + modelData.name)
+                         ToolManager.selectTool(modelData.name)
+                         searchField.text = ""
+                         pluginList.visible = false
+                         pluginViewLoader.sourceComponent = null
+                         if (modelData.hasCustomView) {
+                            //  pluginViewLoader.sourceComponent = modelData.customViewComponent
+                             pluginViewLoader.source = modelData.source
+                         } else {
+                             searchField.forceActiveFocus()
+                             mainRect.isPluginInput = true
+                         }
+                     }
 
-                    function activate() {
-                        ToolManager.selectTool(modelData.name)
-                        searchField.text = ""
-                        pluginViewLoader.sourceComponent = null
-                        if (modelData.hasCustomView) {
-                            pluginViewLoader.sourceComponent = modelData.customViewComponent
-                        } else {
-                            searchField.forceActiveFocus()
-                        }
-                    }
+                     function activate() {
+                         console.log("Activated: " + modelData.name)
+                         ToolManager.selectTool(modelData.name)
+                         searchField.text = ""
+                         pluginList.visible = false
+                         pluginViewLoader.sourceComponent = null
+                         if (modelData.hasCustomView) {
+                            //  pluginViewLoader.sourceComponent = modelData.customViewComponent
+                             pluginViewLoader.source = modelData.source
+                         } else {
+                             searchField.forceActiveFocus()
+                             mainRect.isPluginInput = true
+                         }
+                     }
                 }
                 Keys.onPressed: (event) => {
                     if (event.key === Qt.Key_Up) {
@@ -129,20 +189,20 @@ ApplicationWindow {
             }
             Loader {
                 id: pluginViewLoader
-                anchors.top: searchField.bottom
+                anchors.top: pluginList.bottom
                 width: parent.width
             }
         }
 
     } // mainRect
-    
+
     // 修改 MultiEffect 参数，注意 shadowBlur 值和偏移
     MultiEffect {
         id: effect
         anchors.fill: mainRect
         source: mainRect
         shadowEnabled: true
-        shadowColor: "red"
+        shadowColor: "lightgray" // 阴影颜色
         shadowBlur: 0.5           // 增大模糊半径
         autoPaddingEnabled: true
         shadowHorizontalOffset: 0  // 无偏移

@@ -7,12 +7,12 @@
 #include <QGuiApplication>
 #include <QRegularExpression>
 
-// RandomTestTool.h
 class UnixPathConvertTool : public ITool {
     Q_OBJECT
 public:
     explicit UnixPathConvertTool(QObject* parent = nullptr) : ITool(parent) {}
     ~UnixPathConvertTool() override = default;
+    QString icon() const override; 
     QString name() const override; 
     QString description() const override;
     Q_INVOKABLE void process(QVariantMap argMap) override;
@@ -23,6 +23,7 @@ class WinPathConvertTool : public ITool {
 public:
     explicit WinPathConvertTool(QObject* parent = nullptr) : ITool(parent) {}
     ~WinPathConvertTool() override = default;
+    QString icon() const override; 
     QString name() const override; 
     QString description() const override;
     Q_INVOKABLE void process(QVariantMap argMap) override;
